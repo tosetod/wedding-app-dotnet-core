@@ -11,5 +11,8 @@ namespace DataModels.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
+        public DateTime DateCreated { get; set; }
+        public DateTime DateModified { get; set; }
+        //public User CreatedBy { get; set; }
     }
 }

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
-namespace DataModels.Entities
+namespace Models
 {
-    public class Restaurant : BaseEntity
+    public class RestaurantModel
     {
+        public long Id { get; set; }
         public string Name { get; set; }
         public string Phone { get; set; }
         public string LogoUrl { get; set; }

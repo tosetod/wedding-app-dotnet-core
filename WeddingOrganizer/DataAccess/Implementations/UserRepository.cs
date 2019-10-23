@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using DataAccess.Contracts;
 using DataModels;
 using DataModels.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Implementations
 {
@@ -38,6 +40,11 @@ namespace DataAccess.Implementations
         {
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<User> GetById(long id)
+        {
+            return await _context.Users.SingleOrDefaultAsync(user => user.Id == id);
         }
     }
 }
