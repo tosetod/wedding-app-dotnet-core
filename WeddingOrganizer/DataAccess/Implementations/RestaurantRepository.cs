@@ -19,14 +19,14 @@ namespace DataAccess.Implementations
             _context = context;
         }
 
-        public IQueryable<Restaurant> GetAll()
+        public IEnumerable<Restaurant> GetAll()
         {
-            return _context.Restaurants.AsQueryable();
+            return _context.Restaurants.ToList();
         }
 
         public async Task<Restaurant> GetById(long id)
         {
-            return await _context.Restaurants.SingleOrDefaultAsync(restaurant => restaurant.Id == id);
+            return await _context.Restaurants.FindAsync(id);
         }
 
         public async void Add(Restaurant entity)

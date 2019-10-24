@@ -15,7 +15,7 @@ namespace DataModels.Entities
         public byte PartnerAge { get; set; }
         public virtual  IQueryable<BudgetItem> BudgetItems { get; set; }
         public virtual  IQueryable<Guest> Guests{ get; set; }
-        public long RestaurantId { get; set; }
+        public long? RestaurantId { get; set; }
         public virtual Restaurant Restaurant { get; set; }
     }
 }

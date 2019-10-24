@@ -19,9 +19,9 @@ namespace DataAccess.Implementations
             _context = context;
         }
 
-        public IQueryable<Guest> GetAll()
+        public IEnumerable<Guest> GetAll()
         {
-            return _context.Guests.AsQueryable();
+            return _context.Guests.ToList();
         }
 
         public async Task<Guest> GetById(long id)

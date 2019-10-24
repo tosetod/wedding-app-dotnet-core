@@ -4,6 +4,7 @@ using System.Threading;
 using DataModels.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using DataModels.Mapping;
 
 namespace DataModels
 {
@@ -37,5 +38,12 @@ namespace DataModels
 
             return base.SaveChangesAsync(cancellationToken);
         }
+
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    modelBuilder.ApplyConfiguration(new GuestMap());
+
+        //    base.OnModelCreating(modelBuilder);
+        //}
     }
 }

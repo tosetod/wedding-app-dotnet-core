@@ -19,9 +19,9 @@ namespace DataAccess.Implementations
             _context = context;
         }
 
-        public IQueryable<User> GetAll()
+        public IEnumerable<User> GetAll()
         {
-            return _context.Users.AsQueryable();
+            return _context.Users.ToList();
         }
 
         public async void Add(User user)
@@ -44,7 +44,7 @@ namespace DataAccess.Implementations
 
         public async Task<User> GetById(long id)
         {
-            return await _context.Users.SingleOrDefaultAsync(user => user.Id == id);
+            return await _context.Users.FindAsync(id);
         }
     }
 }
