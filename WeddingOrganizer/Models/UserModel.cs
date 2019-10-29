@@ -14,6 +14,8 @@ namespace Models
         public byte PartnerAge { get; set; }
         public string FullName => $"{FirstName} {LastName}";
         public string Token { get; set; }
+        public long RestaurantId { get; set; }
         public RestaurantModel Restaurant{ get; set; }
+
     }
 }

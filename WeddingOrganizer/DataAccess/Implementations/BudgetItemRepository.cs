@@ -26,22 +26,22 @@ namespace DataAccess.Implementations
 
         public async Task<BudgetItem> GetById(long id)
         {
-            return await _context.BudgetItems.SingleOrDefaultAsync(item => item.Id == id);
+            return await _context.BudgetItems.FindAsync(id);
         }
 
-        public async void Add(BudgetItem entity)
+        public async Task Add(BudgetItem entity)
         {
             await _context.BudgetItems.AddAsync(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async void Update(BudgetItem entity)
+        public async Task Update(BudgetItem entity)
         {
             _context.BudgetItems.Update(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async void Delete(BudgetItem entity)
+        public async Task Delete(BudgetItem entity)
         {
             _context.Remove(entity);
             await _context.SaveChangesAsync();

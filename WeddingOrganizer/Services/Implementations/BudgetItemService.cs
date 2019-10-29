@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using AutoMapper;
 using DataAccess.Contracts;
 using DataModels.Entities;
@@ -28,34 +29,38 @@ namespace Services.Implementations
                     Where(x => x.UserId == userId));
         }
 
-        public BudgetItemModel GetBudgetItem(long id, long userId)
+        public async Task<BudgetItemModel> GetBudgetItem(long id, long userId)
         {
-            var budgetItem = _budgetItemRepository
-                .GetAll().
-                FirstOrDefault(item => item.Id == id && item.UserId == userId);
+            var budgetItem = await _budgetItemRepository.GetById(id);
 
-            return _mapper.Map<BudgetItemModel>(
-                budgetItem ?? throw new ResourceNotFoundException<Guest>(id));
+            if (budgetItem.UserId != userId)
+            {
+                throw new ResourceNotFoundException<Guest>(id);
+            }
+
+            return _mapper.Map<BudgetItemModel>(budgetItem);
         }
 
-        public void AddBudgetItem(BudgetItemModel budgetItem)
+        public async Task AddBudgetItem(BudgetItemModel budgetItem)
         {
             var newItem = _mapper.Map<BudgetItem>(budgetItem);
-            _budgetItemRepository.Add(newItem);
+            await _budgetItemRepository.Add(newItem);
         }
 
-        public void UpdateBudgetItem(BudgetItemModel budgetItem)
+        public async Task UpdateBudgetItem(BudgetItemModel budgetItem)
         {
-            _budgetItemRepository.Update(
+            await _budgetItemRepository.Update(
                 _mapper.Map<BudgetItem>(budgetItem));
         }
 
-        public void DeleteBudgetItem(long id, long userId)
+        public async Task DeleteBudgetItem(long id, long userId)
         {
-            var item = GetBudgetItem(id, userId);
-            _budgetItemRepository.Delete(
-                _mapper.Map<BudgetItem>(
-                    item ?? throw new ResourceNotFoundException<Guest>(id)));
+            var item = await _budgetItemRepository.GetById(id);
+            if (item.UserId != userId)
+            {
+                throw new ResourceNotFoundException<BudgetItem>(id);
+            }
+            await _budgetItemRepository.Delete(item);
         }
     }
 }

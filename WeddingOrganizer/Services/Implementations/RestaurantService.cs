@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using AutoMapper;
 using DataAccess.Contracts;
 using DataModels.Entities;
@@ -27,20 +28,20 @@ namespace Services.Implementations
             _mapper = mapper;
         }
 
-        public IEnumerable<RestaurantModel> GetAllRestaurants(long userId)
+        public IEnumerable<RestaurantModel> GetAllRestaurants()
         {
             return _mapper.Map<IEnumerable<RestaurantModel>>(_restaurantRepository.GetAll());
         }
 
-        public RestaurantModel GetRestaurant(long id)
+        public async Task<RestaurantModel> GetRestaurant(long id)
         {
-            var restaurant = _restaurantRepository.GetById(id);
+            var restaurant = await _restaurantRepository.GetById(id);
             return _mapper.Map<RestaurantModel>(restaurant ?? throw new ResourceNotFoundException<Restaurant>(id));
         }
 
-        public RestaurantModel GetUserRestaurant(long id, long userId)
+        public async Task<RestaurantModel> GetUserRestaurant(long id, long userId)
         {
-            var user = _userRepository.GetById(userId).Result;
+            var user = await _userRepository.GetById(userId);
             var restaurant = _restaurantRepository
                 .GetAll()
                 .SingleOrDefault(r => r.Id == id && user.RestaurantId == id);
@@ -48,23 +49,23 @@ namespace Services.Implementations
             return _mapper.Map<RestaurantModel>(restaurant ?? throw new ResourceNotFoundException<Restaurant>(id));
         }
 
-        public void AddRestaurant(RestaurantModel restaurant)
+        public async Task AddRestaurant(RestaurantModel restaurant)
         {
             var newRestaurant = _mapper.Map<Restaurant>(restaurant);
-            _restaurantRepository.Add(newRestaurant);
+            await _restaurantRepository.Add(newRestaurant);
         }
 
-        public void UpdateRestaurant(RestaurantModel restaurant)
+        public async Task UpdateRestaurant(RestaurantModel restaurant)
         {
-            _restaurantRepository.Update(
+            await _restaurantRepository.Update(
                 _mapper.Map<Restaurant>(restaurant));
         }
 
-        public void DeleteRestaurant(long id)
+        public async Task DeleteRestaurant(long id)
         {
-            var restaurant = GetRestaurant(id);
-            _restaurantRepository.Delete(
-                _mapper.Map<Restaurant>(restaurant?? throw new ResourceNotFoundException<Restaurant>(id)));
+            var restaurant = await _restaurantRepository.GetById(id);
+            await _restaurantRepository.Delete(
+                _mapper.Map<Restaurant>(restaurant));
         }
     }
 }

@@ -29,19 +29,19 @@ namespace DataAccess.Implementations
             return await _context.Restaurants.FindAsync(id);
         }
 
-        public async void Add(Restaurant entity)
+        public async Task Add(Restaurant entity)
         {
             await _context.Restaurants.AddAsync(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async void Update(Restaurant entity)
+        public async Task Update(Restaurant entity)
         {
             _context.Restaurants.Update(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async void Delete(Restaurant entity)
+        public async Task Delete(Restaurant entity)
         {
             _context.Restaurants.Remove(entity);
             await _context.SaveChangesAsync();

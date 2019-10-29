@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using AutoMapper;
 using DataAccess.Contracts;
 using DataModels.Entities;
@@ -30,32 +31,39 @@ namespace Services.Implementations
            
         }
 
-        public GuestModel GetGuest(long id, long userId)
+        public async Task<GuestModel> GetGuest(long id, long userId)
         {
-            var guest = _guestRepository
-                .GetAll()
-                .FirstOrDefault(item => item.Id == id && item.UserId == userId);
+            var guest = await _guestRepository.GetById(id);
 
-            return _mapper.Map<GuestModel>(guest ?? throw new ResourceNotFoundException<Guest>(id));
+            if (guest.UserId != userId)
+            {
+                throw new ResourceNotFoundException<Guest>(id);
+            }
+
+            return _mapper.Map<GuestModel>(guest);
         }
 
-        public void AddGuest(GuestModel guest)
+        public async Task AddGuest(GuestModel guest)
         {
             var newGuest = _mapper.Map<Guest>(guest);
-            _guestRepository.Add(newGuest);
+            await _guestRepository.Add(newGuest);
         }
 
-        public void UpdateGuest(GuestModel guest)
+        public async Task UpdateGuest(GuestModel guest)
         {
-            _guestRepository.Update(
+            await _guestRepository.Update(
                 _mapper.Map<Guest>(guest));
         }
 
-        public void DeleteGuest(long id, long userId)
+        public async Task DeleteGuest(long id, long userId)
         {
-            var guest = GetGuest(id, userId);
-            _guestRepository.Delete(
-                _mapper.Map<Guest>(guest ?? throw new ResourceNotFoundException<Guest>(id)));
+            var guest = await _guestRepository.GetById(id);
+            if (guest.UserId != userId)
+            {
+                throw new ResourceNotFoundException<Guest>(id);
+            }
+            await _guestRepository.Delete(
+                _mapper.Map<Guest>(guest));
         }
     }
 }

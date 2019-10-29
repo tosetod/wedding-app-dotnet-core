@@ -1,18 +1,19 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Models;
-using Swashbuckle.AspNetCore.Swagger;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+
+using Models;
+
 using Services.Contracts;
 using Services.Helpers;
 using Services.Implementations;
+
+using System.Text;
 
 namespace WeddingOrganizerApi
 {
@@ -33,16 +34,27 @@ namespace WeddingOrganizerApi
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Wedding Organizer API", Version = "v1" });
-                c.AddSecurityDefinition("oauth2", new ApiKeyScheme()
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Wedding Organizer API", Version = "v1" });
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme()
                 {
-                    Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
-                    In = "header",
+                    Description = "Standard Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+                    In = ParameterLocation.Header,
                     Name = "Authorization",
-                    Type = "apiKey"
+                    Type = SecuritySchemeType.ApiKey
                 });
-                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
-                    { "oauth2", Enumerable.Empty<string>() },
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                {
+                    {new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "oauth2"
+                            },
+                            Scheme = "oauth2",
+                            Name = "Bearer"
+                        },
+                        new string []{}}
                 });
             });
 
@@ -70,9 +82,6 @@ namespace WeddingOrganizerApi
                         ValidateAudience = false
                     };
                 });
-
-
-            services.AddSingleton(Configuration);
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IBudgetItemService, BudgetItemService>();
             services.AddTransient<IGuestService, GuestService>();
@@ -94,9 +103,7 @@ namespace WeddingOrganizerApi
                 });
             }
 
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
+            // app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
@@ -107,8 +114,9 @@ namespace WeddingOrganizerApi
                     .AllowAnyHeader()
                     .WithExposedHeaders("Authorization");
             });
-            app.UseAuthentication();
 
+            app.UseAuthentication();
+            app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

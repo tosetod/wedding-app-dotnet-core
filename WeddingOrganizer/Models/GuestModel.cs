@@ -11,6 +11,6 @@ namespace Models
         public bool IsInvited { get; set; }
         public bool Confirmed { get; set; }
         public bool HasPlusOne { get; set; }
-        public UserModel User{ get; set; }
+        public long UserId { get; set; }
     }
 }

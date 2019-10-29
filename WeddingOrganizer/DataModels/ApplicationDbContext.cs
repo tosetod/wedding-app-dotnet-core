@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Linq;
 using System.Threading;
 using DataModels.Entities;
@@ -39,11 +40,12 @@ namespace DataModels
             return base.SaveChangesAsync(cancellationToken);
         }
 
-        //protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //{
-        //    modelBuilder.ApplyConfiguration(new GuestMap());
-
-        //    base.OnModelCreating(modelBuilder);
-        //}
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new UserMap());
+            modelBuilder.ApplyConfiguration(new BudgetItemMap());
+            modelBuilder.ApplyConfiguration(new RestaurantMap());
+            modelBuilder.ApplyConfiguration(new GuestMap());
+        }
     }
 }

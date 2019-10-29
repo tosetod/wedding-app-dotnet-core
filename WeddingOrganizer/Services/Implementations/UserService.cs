@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using AutoMapper;
 using DataAccess.Contracts;
 using DataModels.Entities;
@@ -17,42 +18,36 @@ using Services.Exceptions;
 
 namespace Services.Implementations
 {
+    public static class Roles
+    {
+        public const string User = "User";
+    }
+
     public class UserService : IUserService
     {
-        private readonly IRepository<User> _userRepository;
-        private readonly IMapper _mapper;
         private readonly JwtSettings _jwtSettings;
+        private readonly IMapper _mapper;
+        private readonly IRepository<Restaurant> _restaurantRepository;
+        private readonly IRepository<User> _userRepository;
 
-        public UserService(IRepository<User> userRepository, IMapper mapper, IOptions<JwtSettings> jwtSettings)
+        public UserService(
+            IRepository<User> userRepository, 
+            IMapper mapper, 
+            IOptions<JwtSettings> jwtSettings,
+            IRepository<Restaurant> restaurantRepository)
         {
             _userRepository = userRepository;
             _mapper = mapper;
+            _restaurantRepository = restaurantRepository;
             _jwtSettings = jwtSettings.Value;
         }
-        public IEnumerable<UserModel> GetAllUsers()
-        {
-            return _mapper.Map<IEnumerable<UserModel>>(_userRepository.GetAll());
-        }
 
-        public UserModel GetUser(long id)
-        {
-            var restaurant = _userRepository.GetById(id);
-            return _mapper.Map<UserModel>(restaurant ?? throw new ResourceNotFoundException<User>(id));
-        }
-
-        public void UpdateUser(UserModel user)
-        {
-            _userRepository.Update(
-                _mapper.Map<User>(user));
-        }
-
-        public void DeleteUser(long id)
-        {
-            var user = GetUser(id);
-            _userRepository.Delete(
-                _mapper.Map<User>(user?? throw new ResourceNotFoundException<User>(id)));
-        }
-
+        /// <summary>
+        /// Authenticate user with JWT Bearer Token
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
         public UserModel Authenticate(string email, string password)
         {
             var md5 = new MD5CryptoServiceProvider();
@@ -85,32 +80,72 @@ namespace Services.Implementations
             return userModel;
         }
 
-        public void Register(RegisterModel model)
+        public async Task DeleteUser(long id)
         {
-            //if(string.IsNullOrEmpty(model.FirstName))
-            //    throw new ToDoException("First name is required");
+            var user = GetUser(id);
+            if (user == null)
+            {
+                throw new ResourceNotFoundException<User>(id);
+            }
+            await _userRepository.Delete(_mapper.Map<User>(user));
+        }
 
-            //if (string.IsNullOrEmpty(model.LastName))
-            //    throw new ToDoException("Last name is required");
+        public IEnumerable<UserModel> GetAllUsers()
+        {
+            return _mapper.Map<IEnumerable<UserModel>>(_userRepository.GetAll());
+        }
 
-            //if (!ValidUsername(model.Username))
-            //    throw new ToDoException("Username is already in use");
+        public async Task<UserModel> GetUser(long id)
+        {
+            var user = await _userRepository.GetById(id);
 
-            //if (!ValidPassword(model.Password))
-            //    throw new ToDoException("Please use stronger password");
+            if (user == null)
+            {
+                throw new ResourceNotFoundException<User>(id);
+            }
 
-            //if (model.Password != model.ConfirmPassword)
-            //    throw new ToDoException("Password and Confirm Password are not matching");
+            var restaurantId = user.RestaurantId;
+            if (restaurantId.HasValue)
+            {
+                user.Restaurant = await _restaurantRepository.GetById(restaurantId.Value);
+            }
+            return _mapper.Map<UserModel>(user);
+        }
+
+        /// <summary>
+        /// Register new user async
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public async Task Register(RegisterModel model)
+        {
+            if (string.IsNullOrEmpty(model.FirstName))
+                throw new UserException("First name is required");
+
+            if (!ValidEmail(model.Email))
+                throw new UserException("Account with this e-mail already exists");
+
+            if (!ValidPassword(model.Password))
+                throw new UserException("Please use stronger password");
+
+            if (model.Password != model.ConfirmPassword)
+                throw new UserException("Password and Confirm Password are not matching");
 
             var md5 = new MD5CryptoServiceProvider();
             var md5Data = md5.ComputeHash(Encoding.ASCII.GetBytes(model.Password));
             var hashedPassword = Encoding.ASCII.GetString(md5Data);
 
             var user = _mapper.Map<User>(model);
+            user.Password = hashedPassword;
 
-            _userRepository.Add(user);
+            await _userRepository.Add(user);
         }
 
+        public async Task UpdateUser(UserModel user)
+        {
+            await _userRepository.Update(
+                _mapper.Map<User>(user));
+        }
         private static bool ValidPassword(string password)
         {
             var passwordRegex = new Regex("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{6,20}$");
@@ -118,7 +153,7 @@ namespace Services.Implementations
             return match.Success;
         }
 
-        private bool ValidUsername(string email)
+        private bool ValidEmail(string email)
         {
             return _userRepository.GetAll().All(x => x.Email != email);
         }

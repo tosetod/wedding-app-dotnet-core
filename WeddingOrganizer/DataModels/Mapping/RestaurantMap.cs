@@ -7,11 +7,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DataModels.Mapping
 {
-    public class GuestMap : IEntityTypeConfiguration<Guest>
+    public class RestaurantMap : IEntityTypeConfiguration<Restaurant>
     {
-        public void Configure(EntityTypeBuilder<Guest> builder)
+        public void Configure(EntityTypeBuilder<Restaurant> builder)
         {
             builder.Property(p => p.Name).IsRequired();
+            builder.Property(p => p.Details).IsRequired();
+            builder.Property(p => p.Phone).IsRequired();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AutoMapper;
 using DataAccess.Contracts;
 using DataAccess.Implementations;
 using DataModels;
@@ -12,9 +13,17 @@ namespace Services.Helpers
 {
     public class DiModule
     {
+        /// <summary>
+        /// Register repositories to services with dependency injection
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="connectionString"></param>
+        /// <returns></returns>
         public static IServiceCollection RegisterModule(
             IServiceCollection services, string connectionString)
         {
+            
+            services.AddAutoMapper(typeof(MappingProfile));
             services.AddTransient<IRepository<User>, UserRepository>();
             services.AddTransient<IRepository<BudgetItem>, BudgetItemRepository>();
             services.AddTransient<IRepository<Guest>, GuestRepository>();
